@@ -1,6 +1,10 @@
 #include <WiFi.h>
 #include <esp_wifi.h>
 
+// Прототипы функций (объявления)
+void scanNetworks();
+void sendDeauthPacket();
+
 struct AccessPoint {
   String ssid;
   uint8_t bssid[6];
