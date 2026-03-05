@@ -1,11 +1,11 @@
-name: Build ESP32 Firmware
+name: Build ESP32 Firmware with Patched lib
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # позволяет запускать вручную
+  workflow_dispatch:
 
 jobs:
   build:
@@ -24,6 +24,28 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install platformio
+
+      - name: Download patched libnet80211.a
+        run: |
+          wget -O libnet80211.a https://github.com/Hex2424/esp32_deauth_patch/raw/main/ESP32_ARDUINO_2.0.9/libnet80211.a
+
+      - name: Patch the library before build
+        run: |
+          # Путь к установленному пакету framework-arduinoespressif32
+          FRAMEWORK_DIR=$HOME/.platformio/packages/framework-arduinoespressif32
+          # Возможные расположения целевого файла
+          TARGET_PATHS=(
+            "$FRAMEWORK_DIR/tools/sdk/esp32/lib/libnet80211.a"
+            "$FRAMEWORK_DIR/tools/sdk/lib/libnet80211.a"
+          )
+          PATCHED_FILE="$GITHUB_WORKSPACE/libnet80211.a"
+          for target in "${TARGET_PATHS[@]}"; do
+            if [ -f "$target" ]; then
+              cp "$PATCHED_FILE" "$target"
+              echo "Patched $target"
+              break
+            fi
+          done
 
       - name: Build firmware
         run: pio run
